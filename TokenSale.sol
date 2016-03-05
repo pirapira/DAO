@@ -35,7 +35,7 @@ contract TokenSaleInterface {
     //  function TokenSale(uint _minValue, uint _closingTime);
 
     /// @notice buy Token with `_tokenHolder` as the address of the Token holder.
-    /// @param _tokenHolder The address of the Tokens's recipient 
+    /// @param _tokenHolder The address of the Tokens's recipient
     function buyTokenProxy(address _tokenHolder) returns (bool success);
 
     /// @notice Refund `msg.sender` in the case the Token Sale didn't reach its minimum funding goal

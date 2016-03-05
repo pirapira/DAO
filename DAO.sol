@@ -384,17 +384,18 @@ contract DAO is DAOInterface, Token, TokenSale {
     }
 
 
-    function getMyReward() noEther {
+    function getMyReward() noEther returns (bool success) {
         // my portion of the rewardToken of this DAO, or when called by a split child DAO, their portion of the rewardToken.
         uint myPortionOfTheReward = (balanceOf(msg.sender) * rewardToken[address(this)]) / totalSupply + rewardToken[msg.sender];
         uint myReward = (myPortionOfTheReward * rewardAccount.accumulatedInput()) / totalRewardToken - paidOut[msg.sender];
         if (!rewardAccount.payOut(msg.sender, myReward)) throw;
         paidOut[msg.sender] += myReward;
+        return true;
     }
 
 
     function transfer(address _to, uint256 _value) returns (bool success) {
-        if (isFunded && now > closingTime && transferpaidOut(msg.sender, _to, _value) && super.transfer(_to, _value)){
+        if (isFunded && now > closingTime && transferPaidOut(msg.sender, _to, _value) && super.transfer(_to, _value)) {
             return true;
         }
         else throw;
@@ -402,13 +403,13 @@ contract DAO is DAOInterface, Token, TokenSale {
 
 
     function transferWithoutReward(address _to, uint256 _value) returns (bool success) {
-        getMyReward();
+        if (!getMyReward()) throw;
         return transfer(_to, _value);
     }
 
 
     function transferFrom(address _from, address _to, uint256 _value) returns (bool success) {
-        if (isFunded && now > closingTime && transferpaidOut(_from, _to, _value) && super.transferFrom(_from, _to, _value)){
+        if (isFunded && now > closingTime && transferPaidOut(_from, _to, _value) && super.transferFrom(_from, _to, _value)) {
             return true;
         }
         else throw;
@@ -485,6 +486,7 @@ contract DAO is DAOInterface, Token, TokenSale {
         return proposals[_proposalID].votes.length;
     }
 }
+
 
 contract DAO_Creator {
     function createDAO(address _defaultServiceProvider, uint _minValue, uint _closingTime) returns (DAO _newDAO) {
